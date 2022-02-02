@@ -17,6 +17,7 @@ export default function Comments({data}){
     const [replyActive, setReplyActive] = useState('')
     const [reply, setReply] = useState('')
     const [modalData, setModalData] = useState(null)
+    const [editComment, setEditComment] = useState(null)
     async function postComment(){
         if(newComment != ''){
             const docRef = await addDoc(collection(db, 'comments'),{
@@ -113,6 +114,7 @@ export default function Comments({data}){
                 replies: [docRef.id, ...response.data().replies]
             });
             setReply('')
+            setReplyActive('')
             dispatch(dataAvailable())
 
         }else{
@@ -136,7 +138,10 @@ export default function Comments({data}){
                         <BsFillTrashFill/>
                         Delete
                     </div>
-                    <div className="text-[#573ec4] flex gap-2 items-center hover:text-[#a799e2] cursor-pointer">
+                    <div onClick={()=>{
+                        console.log(comment)
+                        setEditComment({content : comment.content , key: comment.key})
+                    }} className="text-[#573ec4] flex gap-2 items-center hover:text-[#a799e2] cursor-pointer">
                         <MdOutlineModeEditOutline/>
                         Edit
                     </div>
@@ -156,6 +161,17 @@ export default function Comments({data}){
     function handleCloseModal(){
         setModalOpen(false)
         setModalData(null)
+    }
+
+    async function updateComment(comment){
+        console.log(comment)
+        const updateRef = doc(db, "comments", comment.key);
+        const response = await getDoc(updateRef)
+        await updateDoc(updateRef, {
+            content: editComment.content
+        });
+        setEditComment(null)
+        dispatch(dataAvailable())
     }
 
     return(
@@ -219,9 +235,30 @@ export default function Comments({data}){
                                         {_renderControls(comment)}
                                     </div>
                                 </div>
+                                {editComment && editComment.key === comment.key ?
+                                    <div>
+                                        <input onChange={(e)=>{
+                                            setEditComment({content: e.target.value, key: comment.key})
+                                        }} className="w-[100%] mt-6 dark:bg-transparent dark:text-gray-50 border-[1px] px-2 py-3" value={editComment.content}/>
+                                        <div>
+                                        <div className="flex items-center justify-between mt-6">
+                                        <button onClick={()=>{
+                                            setEditComment(null)
+                                        }} className=" bg-gray-500 text-white font-bold px-3 py-2 text-md rounded-md">
+                                            CANCEL
+                                        </button>
+                                        <button onClick={()=>{
+                                            updateComment(comment)
+                                        }} className=" bg-red-400 text-white font-bold px-3 py-2 text-md rounded-md">
+                                            SAVE
+                                        </button>
+                                    </div>
+                                        </div>
+                                    </div>
+                                :
                                 <p className="font-normal text-gray-500 mt-6 dark:text-gray-50">
                                     {comment.content}
-                                </p>
+                                </p>}
                                 <div className="flex justify-between text-[#573ec4] font-bold mt-6 md:hidden">
                                     <div className="bg-[#e9ebf0] rounded-lg px-2 py-[5px] flex items-center gap-2">
                                         <div onClick={()=>{

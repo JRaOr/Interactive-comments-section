@@ -104,10 +104,6 @@ export default function Reply({ id, user, comment, handleReply}){
                         <BsFillTrashFill/>
                         Delete
                     </div>
-                    <div className="text-[#573ec4] flex gap-2 items-center hover:text-[#a799e2] cursor-pointer">
-                        <MdOutlineModeEditOutline/>
-                        Edit
-                    </div>
                 </div>
             )
         else return(
